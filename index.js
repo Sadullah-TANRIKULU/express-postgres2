@@ -2,7 +2,6 @@ const express = require("express");
 const app = express();
 const db = require("./helper");
 
-
 // this will create a server
 app.use(express.urlencoded({
     extended: true
