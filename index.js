@@ -29,3 +29,6 @@ app.get("/note/:id", db.getNoteById);
 app.post("/note", db.createNote);
 app.put("/note/:id", db.updateNoteById);
 app.delete("/note/:id", db.deleteNote);
+app.get("*", (req, res) => {
+  res.send('no routes specified with this name!!!')
+})
