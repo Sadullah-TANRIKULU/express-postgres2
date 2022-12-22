@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const { client } = require("./database");
 
 // this will create a server
 app.use(express.urlencoded({
@@ -25,7 +26,7 @@ app.use((req, res, next) => {
 // this will create a note in db
 app.get("/notes", (req, res) => {
   try {
-      client.query("SELECT * FROM notes", (err, data) => {
+     client.query("SELECT * FROM notes", (err, data) => {
           if (err) throw err;
 
           res.status(200).json({
