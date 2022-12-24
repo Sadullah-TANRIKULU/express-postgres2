@@ -1,6 +1,5 @@
 const express = require("express");
 const app = express();
-const { client } = require("./database");
 
 // this will create a server
 app.use(express.urlencoded({
@@ -21,6 +20,21 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Credentials', true);
     return next(); 
   });
+
+  // to begin with creating a table in postgresql database using pgAdmin4
+// then type codes below
+  const { Client } = require("pg");
+  const { user, host, database, password, port } = require("./dbConfig");
+  
+  const client = new Client({
+      user,
+      host,
+      database,
+      password,
+      port,
+  });
+  
+  client.connect();
 
 
 // this will create a note in db
@@ -56,7 +70,7 @@ app.get("/note/:id", (req, res) => {
       });
   } catch (error) {
       res.status(500).json({
-          err: err.message,
+          err: error.message,
           note: null,
       });
   }
