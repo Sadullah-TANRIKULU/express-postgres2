@@ -2,12 +2,17 @@ const express = require("express");
 const app = express();
 require('dotenv').config({path: './.env'});
 
+let port=process.env.PORT||3000
+
+
 // this will create a server
 app.use(express.urlencoded({
     extended: true
 }));
 app.use(express.json());
-app.listen(process.env.PORT, () => console.log(`Lstening on port ${process.env.PORT}`));
+app.listen(port, () => {
+    console.log(`App running on port ${port} `);
+});
 
 // allowing multiple origins
 app.use((req, res, next) => {
@@ -25,14 +30,14 @@ app.use((req, res, next) => {
   // to begin with creating a table in postgresql database using pgAdmin4
 // then type codes below
   const { Client } = require("pg");
-  const { user, host, database, password, port } = require("./dbConfig");
+  const { user, host, database, password, porte } = require("./dbConfig");
   
   const client = new Client({
       user,
       host,
       database,
       password,
-      port,
+      porte,
   });
   
   client.connect();
