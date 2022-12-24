@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 require('dotenv').config({path: './.env'});
 
-let port=process.env.PORT||3000
+let $port=process.env.PORT||3000
 
 
 // this will create a server
@@ -11,7 +11,7 @@ app.use(express.urlencoded({
 }));
 app.use(express.json());
 app.listen(process.env.PORT, () => {
-    console.log(`App running on port ${port} `);
+    console.log(`App running on port ${$port} `);
 });
 
 // allowing multiple origins
