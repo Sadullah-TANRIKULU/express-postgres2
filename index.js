@@ -82,13 +82,12 @@ app.get("/note/:id", (req, res) => {
 app.post("/note", (req, res) => {
   try {
       const { note, title } = req.body;
-      if(!note) throw Error('Please input a note');
       pool.query(
           "INSERT INTO notes (note, title) VALUES ($1, $2)", [note, title], 
           (err, data) => {
               res.status(201).json({
                   error: null,
-                  message: "Created new note",
+                  note: data.rows[0],
               });
           });
   } catch (error) {
@@ -112,7 +111,7 @@ app.put("/note/:id", (req, res) => {
 
           res.status(201).json({
               err: null,
-              message: "Note updated",
+              note: data.rows[0],
           });
       });
 
@@ -132,7 +131,7 @@ app.delete("/note/:id", (req, res) => {
           if (err) throw err;
           res.status(200).json({
               err: null,
-              message: "Note deleted",
+              note: data.rows[0],
           });
       });
   } catch (error) {
