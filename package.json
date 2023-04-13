@@ -8,7 +8,7 @@
     "dev": "nodemon dotenv index.js"
   },
   "engines": {
-    "node": "16.15.0"
+    "node": "16.19.1"
   },
   "keywords": [],
   "author": "",

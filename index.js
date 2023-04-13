@@ -1,8 +1,9 @@
 const express = require("express");
 const app = express();
 require('dotenv').config({path: './.env'});
+const pg = require("pg");
 
-let port=process.env.PORT||3000
+let port=process.env.PORT || 9852;
 
 
 // this will create a server
@@ -27,32 +28,28 @@ app.use((req, res, next) => {
     return next(); 
   });
 
-  // to begin with creating a table in postgresql database using pgAdmin4
-// then type codes below
-  const { Client } = require("pg");
-  const { user, host, database, password, porte } = require("./dbConfig");
-  
-  const client = new Client({
-      user,
-      host,
-      database,
-      password,
-      porte,
-  });
-  
-  client.connect();
+let pool = new pg.Pool({
+    user: "postgres",
+    host: "containers-us-west-33.railway.app",
+    database: "railway",
+    password: process.env.PASSWORD,
+    port: 6243,
+});
 
+pool.on('error', (err, client) => console.log(err, client));
 
-// this will create a note in db
+console.log('The total number of clients existing within the pool: ', pool.totalCount);
+console.log('The number of clients which are not checked out but are currently idle in the pool: ', pool.idleCount);
+console.log('The number of queued requests waiting on a client when all clients are checked out: ', pool.waitingCount);
+
 app.get("/notes", (req, res) => {
   try {
-     client.query("SELECT * FROM notes", (err, data) => {
+     pool.query("SELECT * FROM notes", (err, data) => {
           if (err) throw err;
 
           res.status(200).json({
               err: null,
               notes: data.rows,
-
           });
       });
   } catch (error) {
@@ -66,7 +63,7 @@ app.get("/notes", (req, res) => {
 app.get("/note/:id", (req, res) => {
   try {
       const id = req.params.id;
-      client.query("SELECT * FROM notes WHERE id = $1", [id], (err, data) => {
+      pool.query("SELECT * FROM notes WHERE id = $1", [id], (err, data) => {
           if (err) throw err;
           
           res.status(200).json({
@@ -81,21 +78,19 @@ app.get("/note/:id", (req, res) => {
       });
   }
 });
+
 app.post("/note", (req, res) => {
   try {
-      const { note } = req.body;
-      if(!note) {
-          throw Error("Send note in request body");
-      }
-      client.query(
-          "INSERT INTO notes (note) VALUES ($1)", [note], 
+      const { note, title } = req.body;
+      if(!note) throw Error('Please input a note');
+      pool.query(
+          "INSERT INTO notes (note, title) VALUES ($1, $2)", [note, title], 
           (err, data) => {
               res.status(201).json({
                   error: null,
                   message: "Created new note",
               });
-          }
-      );
+          });
   } catch (error) {
       res.status(500).json({
           error: error.message,
@@ -103,13 +98,15 @@ app.post("/note", (req, res) => {
       });
   }
 });
+
 app.put("/note/:id", (req, res) => {
   try {
       const id = req.params.id;
       const note = req.body.note;
+      const title = req.body.title;
 
-      client.query("UPDATE notes SET note = $1 WHERE id = $2",
-      [note, id],
+      pool.query("UPDATE notes SET note = $1, title = $2 WHERE id = $3",
+      [note, title, id],
       (err, data) => {
           if (err) throw err;
 
@@ -118,6 +115,7 @@ app.put("/note/:id", (req, res) => {
               message: "Note updated",
           });
       });
+
   } catch (error) {
       res.status(500).json({
           err: error.message,
@@ -125,10 +123,11 @@ app.put("/note/:id", (req, res) => {
       });
   }
 });
+
 app.delete("/note/:id", (req, res) => {
   try {
       const id = req.params.id;
-      client.query("DELETE FROM notes WHERE id = $1", [id], 
+      pool.query("DELETE FROM notes WHERE id = $1", [id], 
       (err, data) => {
           if (err) throw err;
           res.status(200).json({
@@ -143,6 +142,7 @@ app.delete("/note/:id", (req, res) => {
       });
   }
 });
+
 app.get("*", (req, res) => {
   res.send('no routes specified with this name!!!')
-})
+});
